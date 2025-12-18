@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap');
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f8fafc; color: #1e293b; }
+    .card-shadow { box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05); }
+    .nav-active { color: #2563eb !important; }
+    .glass { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(12px); }
+  </style>
+</head>
+<body class="pb-24">
+
+  <header class="bg-blue-600 text-white p-6 rounded-b-[40px] shadow-lg sticky top-0 z-50">
+    <div class="flex justify-between items-center mb-4">
+      <div>
+        <h1 class="text-2xl font-bold tracking-tight">Nipisi Digital</h1>
+        <p class="text-[10px] opacity-80 uppercase tracking-widest font-semibold">Lingkungan Nipisi Berdaya</p>
+      </div>
+      <button onclick="showAdminLogin()" class="bg-white/20 p-2 rounded-full hover:bg-white/30 transition">
+        <i class="fa fa-lock-open text-sm"></i>
+      </button>
+    </div>
+    
+    <div class="bg-black/10 p-2 rounded-2xl text-[11px] flex items-center">
+      <span class="bg-yellow-400 text-blue-900 px-2 py-0.5 rounded-lg font-bold mr-2 uppercase">Info</span>
+      <marquee id="marquee-text" class="font-medium text-white">Memuat data lingkungan...</marquee>
+    </div>
+  </header>
+
+  <main class="px-5 mt-6">
+    
+    <div id="menu-grid" class="grid grid-cols-4 gap-4 mb-8">
+      <div onclick="showLapor()" class="flex flex-col items-center">
+        <div class="bg-orange-100 text-orange-600 w-14 h-14 rounded-2xl flex items-center justify-center mb-2 shadow-sm"><i class="fa fa-bullhorn text-xl"></i></div>
+        <span class="text-[10px] font-bold opacity-70">LAPOR</span>
+      </div>
+      <div onclick="showIuran()" class="flex flex-col items-center">
+        <div class="bg-indigo-100 text-indigo-600 w-14 h-14 rounded-2xl flex items-center justify-center mb-2 shadow-sm"><i class="fa fa-wallet text-xl"></i></div>
+        <span class="text-[10px] font-bold opacity-70">IURAN</span>
+      </div>
+      <div onclick="showEmergency()" class="flex flex-col items-center">
+        <div class="bg-red-100 text-red-600 w-14 h-14 rounded-2xl flex items-center justify-center mb-2 shadow-sm"><i class="fa fa-phone-alt text-xl"></i></div>
+        <span class="text-[10px] font-bold opacity-70">DARURAT</span>
+      </div>
+      <div onclick="loadSection('map')" class="flex flex-col items-center">
+        <div class="bg-green-100 text-green-600 w-14 h-14 rounded-2xl flex items-center justify-center mb-2 shadow-sm"><i class="fa fa-map-marked-alt text-xl"></i></div>
+        <span class="text-[10px] font-bold opacity-70">PETA</span>
+      </div>
+    </div>
+
+    <div id="dynamic-content" class="space-y-6">
+      <div class="py-20 text-center text-gray-400"><i class="fas fa-circle-notch fa-spin text-3xl mb-2"></i><p class="text-sm">Sinkronisasi Data...</p></div>
+    </div>
+  </main>
+
+  <nav class="fixed bottom-0 w-full glass border-t border-gray-100 px-8 py-4 flex justify-between items-center z-50">
+    <button onclick="loadSection('home')" class="flex flex-col items-center gap-1 text-blue-600"><i class="fa fa-home text-xl"></i><span class="text-[9px] font-bold uppercase">Beranda</span></button>
+    <button onclick="loadSection('market')" class="flex flex-col items-center gap-1 text-gray-400"><i class="fa fa-store text-xl"></i><span class="text-[9px] font-bold uppercase">Toko</span></button>
+    <button onclick="loadSection('profile')" class="flex flex-col items-center gap-1 text-gray-400"><i class="fa fa-user-circle text-xl"></i><span class="text-[9px] font-bold uppercase">Profil</span></button>
+  </nav>
+
+  <script>
+    let masterData = {};
+
+    window.onload = () => {
+      google.script.run.withSuccessHandler(data => {
+        masterData = data;
+        document.getElementById('marquee-text').innerText = masterData.pengumuman[0]?.Isi || "Selamat Datang di Nipisi Digital!";
+        loadSection('home');
+      }).getAppData();
+    };
+
+    function loadSection(section) {
+      const container = document.getElementById('dynamic-content');
+      
+      if(section === 'home' || section === 'market') {
+        let html = `
+          <div class="relative mb-6">
+            <input type="text" onkeyup="searchProduct(this.value)" placeholder="Cari kebutuhan..." class="w-full p-4 pl-12 rounded-2xl border-none shadow-sm text-sm focus:ring-2 focus:ring-blue-400 bg-white">
+            <i class="fa fa-search absolute left-4 top-4.5 text-gray-300"></i>
+          </div>
+          <h3 class="font-bold text-gray-800 text-lg flex items-center gap-2"><i class="fa fa-shopping-bag text-blue-500"></i> Produk Nipisi</h3>
+          <div id="product-list" class="grid grid-cols-2 gap-4">`;
+        
+        masterData.produk.forEach(p => {
+          html += `
+            <div class="bg-white rounded-[24px] overflow-hidden card-shadow border border-white">
+              <img src="${p.GambarURL || 'https://via.placeholder.com/300'}" class="w-full h-32 object-cover">
+              <div class="p-3">
+                <p class="text-[8px] font-bold text-blue-500 uppercase">${p.Kategori}</p>
+                <h4 class="text-sm font-bold text-gray-800 truncate">${p['Nama Barang']}</h4>
+                <div class="flex justify-between items-center mt-3">
+                  <span class="text-blue-600 font-extrabold text-sm">Rp${Number(p.Harga).toLocaleString()}</span>
+                  <button onclick="orderWA('${p.WhatsApp}', '${p['Nama Barang']}')" class="bg-blue-600 text-white w-8 h-8 rounded-full flex items-center justify-center shadow-md shadow-blue-200"><i class="fa fa-plus text-xs"></i></button>
+                </div>
+              </div>
+            </div>`;
+        });
+        html += `</div>`;
+        container.innerHTML = html;
+      }
+
+      else if(section === 'profile') {
+        container.innerHTML = `
+          <div class="bg-white p-8 rounded-[32px] text-center card-shadow">
+            <div class="w-24 h-24 mx-auto mb-4 p-1 bg-blue-100 rounded-full">
+              <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" class="w-full h-full rounded-full bg-white">
+            </div>
+            <h2 class="text-xl font-bold">Bpk. Nama Kaling</h2>
+            <p class="text-blue-600 text-sm font-medium mb-6">Kepala Lingkungan Nipisi</p>
+            <div class="grid grid-cols-2 gap-4">
+              <div class="bg-slate-50 p-4 rounded-2xl"><p class="text-[10px] text-gray-400 uppercase font-bold">UMKM Aktif</p><p class="text-lg font-bold text-slate-800">${masterData.toko.length}</p></div>
+              <div class="bg-slate-50 p-4 rounded-2xl"><p class="text-[10px] text-gray-400 uppercase font-bold">Produk</p><p class="text-lg font-bold text-slate-800">${masterData.produk.length}</p></div>
+            </div>
+          </div>`;
+      }
+      
+      else if(section === 'map') {
+        container.innerHTML = `
+          <div class="bg-white p-4 rounded-[32px] card-shadow">
+            <h3 class="font-bold mb-4 px-2">Peta Wilayah</h3>
+            <div class="w-full h-64 bg-slate-100 rounded-2xl flex items-center justify-center overflow-hidden">
+               <p class="text-xs text-slate-400 italic text-center px-6">Ganti src iframe di kode dengan URL Google Maps wilayah Anda.</p>
+            </div>
+          </div>`;
+      }
+    }
+
+    // Fitur: Pengaduan
+    function showLapor() {
+      document.getElementById('dynamic-content').innerHTML = `
+        <div class="bg-white p-6 rounded-[32px] shadow-sm border border-orange-50">
+          <h3 class="font-bold text-lg mb-4 text-orange-600"><i class="fa fa-edit mr-2"></i>Form Pengaduan</h3>
+          <input id="l-nama" placeholder="Nama Anda" class="w-full p-4 mb-3 rounded-2xl bg-slate-50 border-none text-sm">
+          <input id="l-hal" placeholder="Hal yang dilaporkan" class="w-full p-4 mb-3 rounded-2xl bg-slate-50 border-none text-sm">
+          <textarea id="l-isi" placeholder="Ceritakan detailnya..." class="w-full p-4 mb-4 rounded-2xl bg-slate-50 border-none text-sm" rows="4"></textarea>
+          <button onclick="kirimLaporan()" class="w-full bg-orange-500 text-white py-4 rounded-2xl font-bold text-sm shadow-lg shadow-orange-100">Kirim Laporan</button>
+        </div>`;
+    }
+
+    function kirimLaporan() {
+      const obj = { nama: document.getElementById('l-nama').value, judul: document.getElementById('l-hal').value, isi: document.getElementById('l-isi').value };
+      if(!obj.nama || !obj.isi) return alert("Mohon lengkapi form!");
+      google.script.run.withSuccessHandler(res => { alert(res); loadSection('home'); }).submitPengaduan(obj);
+    }
+
+    // Fitur: Iuran
+    function showIuran() {
+      document.getElementById('dynamic-content').innerHTML = `
+        <div class="bg-white p-6 rounded-[32px] shadow-sm border border-indigo-50">
+          <h3 class="font-bold text-lg mb-4 text-indigo-700"><i class="fa fa-search-dollar mr-2"></i>Cek Iuran Warga</h3>
+          <div class="flex gap-2 mb-6">
+            <input id="search-iuran" placeholder="Masukkan Nama Lengkap..." class="flex-1 p-4 rounded-2xl bg-slate-50 border-none text-sm">
+            <button onclick="prosesCekIuran()" class="bg-indigo-600 text-white px-6 rounded-2xl font-bold text-sm"><i class="fa fa-search"></i></button>
+          </div>
+          <div id="hasil-iuran" class="space-y-3"></div>
+        </div>`;
+    }
+
+    function prosesCekIuran() {
+      const n = document.getElementById('search-iuran').value;
+      const resDiv = document.getElementById('hasil-iuran');
+      resDiv.innerHTML = '<p class="text-center py-4 animate-pulse">Mencari data...</p>';
+      
+      google.script.run.withSuccessHandler(data => {
+        if(data.length === 0) { resDiv.innerHTML = '<p class="text-center text-red-500 text-xs">Data tidak ditemukan.</p>'; return; }
+        let html = '';
+        data.forEach(d => {
+          html += `
+            <div class="p-4 rounded-2xl border ${d.Status === 'Lunas' ? 'border-green-100 bg-green-50' : 'border-red-100 bg-red-50'}">
+              <div class="flex justify-between items-center">
+                <div><p class="text-[9px] font-bold text-slate-400 uppercase">${d.Bulan}</p><p class="font-bold text-slate-800">Rp${Number(d.Jumlah).toLocaleString()}</p></div>
+                <span class="text-[10px] font-bold px-3 py-1 rounded-full ${d.Status === 'Lunas' ? 'bg-green-600 text-white' : 'bg-red-600 text-white'}">${d.Status}</span>
+              </div>
+            </div>`;
+        });
+        resDiv.innerHTML = html;
+      }).cekIuranWarga(n);
+    }
+
+    // Fitur: Darurat
+    function showEmergency() {
+      let html = `<h3 class="font-bold text-red-600 mb-4 px-2 italic">Telepon Penting Lingkungan</h3>`;
+      masterData.darurat.forEach(d => {
+        html += `
+          <a href="tel:${d.Nomor}" class="flex items-center justify-between bg-white p-5 rounded-[24px] mb-3 shadow-sm border-l-4 border-red-500">
+            <span class="font-bold text-slate-700">${d.Nama}</span>
+            <div class="bg-red-100 text-red-600 p-2 rounded-full"><i class="fa fa-phone-alt"></i></div>
+          </a>`;
+      });
+      document.getElementById('dynamic-content').innerHTML = html;
+    }
+
+    // Fitur: Pencarian
+    function searchProduct(v) {
+      const filtered = masterData.produk.filter(p => p['Nama Barang'].toLowerCase().includes(v.toLowerCase()));
+      const list = document.getElementById('product-list');
+      if(!list) return;
+      let html = '';
+      filtered.forEach(p => {
+        html += `<div class="bg-white rounded-[24px] overflow-hidden card-shadow border border-white">
+          <img src="${p.GambarURL || 'https://via.placeholder.com/300'}" class="w-full h-32 object-cover">
+          <div class="p-3"><p class="text-[8px] font-bold text-blue-500 uppercase">${p.Kategori}</p>
+          <h4 class="text-sm font-bold text-gray-800 truncate">${p['Nama Barang']}</h4>
+          <div class="flex justify-between items-center mt-3"><span class="text-blue-600 font-extrabold text-sm">Rp${Number(p.Harga).toLocaleString()}</span>
+          <button onclick="orderWA('${p.WhatsApp}', '${p['Nama Barang']}')" class="bg-blue-600 text-white w-8 h-8 rounded-full flex items-center justify-center shadow-md shadow-blue-200"><i class="fa fa-plus text-xs"></i></button></div></div></div>`;
+      });
+      list.innerHTML = html;
+    }
+
+    function orderWA(num, item) { window.open(`https://wa.me/${num}?text=Halo, saya ingin memesan ${item}. Apakah stok masih ada?`, '_blank'); }
+
+    // Fitur: Admin Dashboard
+    function showAdminLogin() {
+      const p = prompt("Masukkan Password Admin:");
+      google.script.run.withSuccessHandler(v => { if(v) renderAdmin(); else alert("Salah!"); }).checkAdminLogin(p);
+    }
+
+    function renderAdmin() {
+      document.getElementById('dynamic-content').innerHTML = `
+        <div class="bg-slate-900 text-white p-6 rounded-[32px]">
+          <h2 class="font-bold text-lg mb-6 flex items-center gap-2"><i class="fa fa-user-shield text-blue-400"></i> Panel Admin</h2>
+          <div class="space-y-6">
+            <div>
+              <label class="block text-[10px] font-bold text-slate-400 mb-2 uppercase">Update Pengumuman</label>
+              <textarea id="adm-info" class="w-full p-4 rounded-2xl bg-slate-800 border-none text-white text-sm" rows="2">${masterData.pengumuman[0]?.Isi || ''}</textarea>
+              <button onclick="saveInfo()" class="w-full bg-blue-600 text-white mt-2 py-3 rounded-2xl text-xs font-bold uppercase tracking-widest">Simpan Pengumuman</button>
+            </div>
+            <div class="pt-4 border-t border-slate-800">
+              <label class="block text-[10px] font-bold text-slate-400 mb-2 uppercase tracking-widest">Tambah Produk</label>
+              <input id="p-nama" placeholder="Nama Barang" class="w-full p-4 mb-2 rounded-2xl bg-slate-800 border-none text-sm text-white">
+              <input id="p-harga" placeholder="Harga (Contoh: 5000)" type="number" class="w-full p-4 mb-2 rounded-2xl bg-slate-800 border-none text-sm text-white">
+              <input id="p-toko" placeholder="Nama Toko" class="w-full p-4 mb-2 rounded-2xl bg-slate-800 border-none text-sm text-white">
+              <input id="p-wa" placeholder="WhatsApp (628...)" class="w-full p-4 mb-2 rounded-2xl bg-slate-800 border-none text-sm text-white">
+              <input id="p-img" placeholder="Link Foto (URL)" class="w-full p-4 mb-4 rounded-2xl bg-slate-800 border-none text-sm text-white">
+              <button onclick="saveProduct()" class="w-full bg-green-600 text-white py-4 rounded-2xl text-xs font-bold uppercase tracking-widest">Terbitkan Produk</button>
+            </div>
+          </div>
+        </div>`;
+    }
+
+    function saveInfo() {
+      const val = document.getElementById('adm-info').value;
+      google.script.run.withSuccessHandler(res => { alert(res); location.reload(); }).updateAnnouncement(val);
+    }
+
+    function saveProduct() {
+      const o = { nama: document.getElementById('p-nama').value, harga: document.getElementById('p-harga').value, toko: document.getElementById('p-toko').value, wa: document.getElementById('p-wa').value, gambar: document.getElementById('p-img').value, kategori: 'Umum' };
+      google.script.run.withSuccessHandler(res => { alert(res); location.reload(); }).addProductFromAdmin(o);
+    }
+  </script>
+</body>
+</html>
