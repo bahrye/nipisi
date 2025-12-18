@@ -1,0 +1,68 @@
+function doGet() {
+  return HtmlService.createTemplateFromFile('Index')
+    .evaluate()
+    .setTitle('Nipisi Digital Market')
+    .addMetaTag('viewport', 'width=device-width, initial-scale=1')
+    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+}
+
+// Mengambil semua data untuk performa aplikasi yang cepat
+function getAppData() {
+  return {
+    produk: getData('Produk'),
+    toko: getData('Toko'),
+    pengumuman: getData('Pengumuman'),
+    darurat: getData('Darurat'),
+    iuran: getData('Iuran')
+  };
+}
+
+function getData(sheetName) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName(sheetName);
+  if (!sheet) return [];
+  const data = sheet.getDataRange().getValues();
+  const headers = data.shift();
+  return data.map(row => {
+    let obj = {};
+    headers.forEach((header, i) => obj[header] = row[i]);
+    return obj;
+  });
+}
+
+// Logika Admin
+function checkAdminLogin(password) {
+  const PASS_ADMIN = "nipisi123"; // Ganti password Anda di sini
+  return password === PASS_ADMIN;
+}
+
+function updateAnnouncement(text) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName('Pengumuman');
+  sheet.getRange("A2").setValue(text);
+  sheet.getRange("B2").setValue("Aktif");
+  return "Pengumuman berhasil diperbarui!";
+}
+
+function addProductFromAdmin(obj) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName('Produk');
+  const lastId = sheet.getLastRow();
+  sheet.appendRow([lastId, obj.nama, obj.kategori, obj.harga, obj.toko, obj.wa, obj.gambar]);
+  return "Produk " + obj.nama + " berhasil diterbitkan!";
+}
+
+// Logika Pengaduan
+function submitPengaduan(obj) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName('Pengaduan');
+  sheet.appendRow([new Date(), obj.nama, obj.judul, obj.isi, "Proses"]);
+  return "Laporan diterima! Terima kasih telah peduli dengan lingkungan Nipisi.";
+}
+
+// Logika Cek Iuran
+function cekIuranWarga(nama) {
+  const data = getData('Iuran');
+  if (!nama) return [];
+  return data.filter(d => d['Nama Warga'] && d['Nama Warga'].toLowerCase().includes(nama.toLowerCase()));
+}
