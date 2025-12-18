@@ -58,9 +58,17 @@
   </main>
 
   <nav class="fixed bottom-0 w-full glass border-t border-gray-100 px-8 py-4 flex justify-between items-center z-50">
-    <button onclick="loadSection('home')" class="flex flex-col items-center gap-1 text-blue-600"><i class="fa fa-home text-xl"></i><span class="text-[9px] font-bold uppercase">Beranda</span></button>
-    <button onclick="loadSection('market')" class="flex flex-col items-center gap-1 text-gray-400"><i class="fa fa-store text-xl"></i><span class="text-[9px] font-bold uppercase">Toko</span></button>
-    <button onclick="loadSection('profile')" class="flex flex-col items-center gap-1 text-gray-400"><i class="fa fa-user-circle text-xl"></i><span class="text-[9px] font-bold uppercase">Profil</span></button>
+    <button id="nav-home" onclick="loadSection('home')" class="flex flex-col items-center gap-1 text-blue-600 transition-colors duration-300">
+      <i class="fa fa-home text-xl"></i><span class="text-[9px] font-bold uppercase">Beranda</span>
+    </button>
+    
+    <button id="nav-market" onclick="loadSection('market')" class="flex flex-col items-center gap-1 text-gray-400 transition-colors duration-300">
+      <i class="fa fa-store text-xl"></i><span class="text-[9px] font-bold uppercase">Toko</span>
+    </button>
+    
+    <button id="nav-profile" onclick="loadSection('profile')" class="flex flex-col items-center gap-1 text-gray-400 transition-colors duration-300">
+      <i class="fa fa-user-circle text-xl"></i><span class="text-[9px] font-bold uppercase">Profil</span>
+    </button>
   </nav>
 
   <script>
@@ -75,8 +83,29 @@
     };
 
     function loadSection(section) {
+      // --- LOGIKA UPDATE WARNA TAB (BARU) ---
+      // 1. Reset semua tombol navigasi menjadi abu-abu (text-gray-400)
+      const navIds = ['nav-home', 'nav-market', 'nav-profile'];
+      navIds.forEach(id => {
+        const btn = document.getElementById(id);
+        if (btn) {
+          btn.classList.remove('text-blue-600'); // Hapus warna aktif
+          btn.classList.add('text-gray-400');    // Tambah warna tidak aktif
+        }
+      });
+
+      // 2. Set tombol yang diklik menjadi biru (text-blue-600)
+      // Kita cek apakah ada tombol dengan ID yang sesuai dengan section saat ini
+      const activeBtn = document.getElementById('nav-' + section);
+      if (activeBtn) {
+        activeBtn.classList.remove('text-gray-400');
+        activeBtn.classList.add('text-blue-600');
+      }
+      // ----------------------------------------
+
       const container = document.getElementById('dynamic-content');
       
+      // Logika konten asli tetap sama di bawah ini...
       if(section === 'home' || section === 'market') {
         let html = `
           <div class="relative mb-6">
@@ -86,20 +115,23 @@
           <h3 class="font-bold text-gray-800 text-lg flex items-center gap-2"><i class="fa fa-shopping-bag text-blue-500"></i> Produk Nipisi</h3>
           <div id="product-list" class="grid grid-cols-2 gap-4">`;
         
-        masterData.produk.forEach(p => {
-          html += `
-            <div class="bg-white rounded-[24px] overflow-hidden card-shadow border border-white">
-              <img src="${p.GambarURL || 'https://via.placeholder.com/300'}" class="w-full h-32 object-cover">
-              <div class="p-3">
-                <p class="text-[8px] font-bold text-blue-500 uppercase">${p.Kategori}</p>
-                <h4 class="text-sm font-bold text-gray-800 truncate">${p['Nama Barang']}</h4>
-                <div class="flex justify-between items-center mt-3">
-                  <span class="text-blue-600 font-extrabold text-sm">Rp${Number(p.Harga).toLocaleString()}</span>
-                  <button onclick="orderWA('${p.WhatsApp}', '${p['Nama Barang']}')" class="bg-blue-600 text-white w-8 h-8 rounded-full flex items-center justify-center shadow-md shadow-blue-200"><i class="fa fa-plus text-xs"></i></button>
+        // Pastikan masterData.produk ada sebelum melakukan forEach
+        if (masterData.produk) {
+            masterData.produk.forEach(p => {
+            html += `
+                <div class="bg-white rounded-[24px] overflow-hidden card-shadow border border-white">
+                <img src="${p.GambarURL || 'https://via.placeholder.com/300'}" class="w-full h-32 object-cover">
+                <div class="p-3">
+                    <p class="text-[8px] font-bold text-blue-500 uppercase">${p.Kategori}</p>
+                    <h4 class="text-sm font-bold text-gray-800 truncate">${p['Nama Barang']}</h4>
+                    <div class="flex justify-between items-center mt-3">
+                    <span class="text-blue-600 font-extrabold text-sm">Rp${Number(p.Harga).toLocaleString()}</span>
+                    <button onclick="orderWA('${p.WhatsApp}', '${p['Nama Barang']}')" class="bg-blue-600 text-white w-8 h-8 rounded-full flex items-center justify-center shadow-md shadow-blue-200"><i class="fa fa-plus text-xs"></i></button>
+                    </div>
                 </div>
-              </div>
-            </div>`;
-        });
+                </div>`;
+            });
+        }
         html += `</div>`;
         container.innerHTML = html;
       }
@@ -113,8 +145,8 @@
             <h2 class="text-xl font-bold">Bpk. Nama Kaling</h2>
             <p class="text-blue-600 text-sm font-medium mb-6">Kepala Lingkungan Nipisi</p>
             <div class="grid grid-cols-2 gap-4">
-              <div class="bg-slate-50 p-4 rounded-2xl"><p class="text-[10px] text-gray-400 uppercase font-bold">UMKM Aktif</p><p class="text-lg font-bold text-slate-800">${masterData.toko.length}</p></div>
-              <div class="bg-slate-50 p-4 rounded-2xl"><p class="text-[10px] text-gray-400 uppercase font-bold">Produk</p><p class="text-lg font-bold text-slate-800">${masterData.produk.length}</p></div>
+              <div class="bg-slate-50 p-4 rounded-2xl"><p class="text-[10px] text-gray-400 uppercase font-bold">UMKM Aktif</p><p class="text-lg font-bold text-slate-800">${masterData.toko ? masterData.toko.length : 0}</p></div>
+              <div class="bg-slate-50 p-4 rounded-2xl"><p class="text-[10px] text-gray-400 uppercase font-bold">Produk</p><p class="text-lg font-bold text-slate-800">${masterData.produk ? masterData.produk.length : 0}</p></div>
             </div>
           </div>`;
       }
