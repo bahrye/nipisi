@@ -6,14 +6,17 @@ function doGet() {
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
 }
 
-// Mengambil semua data
 function getAppData() {
   return {
     produk: getData('Produk'),
     toko: getData('Toko'),
     pengumuman: getData('Pengumuman'),
     darurat: getData('Darurat'),
-    iuran: getData('Iuran')
+    iuran: getData('Iuran'),
+    // Fitur Baru
+    agenda: getData('Agenda'),
+    harga: getData('Harga'),
+    galeri: getData('Galeri')
   };
 }
 
@@ -22,7 +25,7 @@ function getData(sheetName) {
   const sheet = ss.getSheetByName(sheetName);
   if (!sheet) return [];
   const data = sheet.getDataRange().getValues();
-  const headers = data.shift(); // Ambil header
+  const headers = data.shift();
   return data.map(row => {
     let obj = {};
     headers.forEach((header, i) => obj[header] = row[i]);
@@ -30,40 +33,51 @@ function getData(sheetName) {
   });
 }
 
-// Logika Admin
+// --- LOGIKA ADMIN ---
 function checkAdminLogin(password) {
-  const PASS_ADMIN = "nipisi123"; 
-  return password === PASS_ADMIN;
+  return password === "nipisi123"; // Ganti Password Disini
 }
 
 function updateAnnouncement(text) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const sheet = ss.getSheetByName('Pengumuman');
-  if (sheet) {
+  if(sheet) {
     sheet.getRange("A2").setValue(text);
-    sheet.getRange("B2").setValue("Aktif");
     return "Pengumuman berhasil diperbarui!";
   }
-  return "Error: Sheet Pengumuman tidak ditemukan.";
+  return "Sheet Pengumuman tidak ditemukan.";
 }
 
 function addProductFromAdmin(obj) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const sheet = ss.getSheetByName('Produk');
-  if (!sheet) return "Error: Sheet Produk tidak ditemukan.";
-  const lastId = sheet.getLastRow();
-  sheet.appendRow([lastId, obj.nama, obj.kategori, obj.harga, obj.toko, obj.wa, obj.gambar]);
-  return "Produk " + obj.nama + " berhasil diterbitkan!";
+  if(sheet) {
+    const lastId = sheet.getLastRow();
+    sheet.appendRow([lastId, obj.nama, obj.kategori, obj.harga, obj.toko, obj.wa, obj.gambar]);
+    return "Produk berhasil diterbitkan!";
+  }
+  return "Sheet Produk tidak ditemukan.";
 }
 
+// --- LOGIKA LAYANAN ---
 function submitPengaduan(obj) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const sheet = ss.getSheetByName('Pengaduan');
-  if (sheet) {
+  if(sheet) {
     sheet.appendRow([new Date(), obj.nama, obj.judul, obj.isi, "Proses"]);
     return "Laporan diterima!";
   }
-  return "Gagal mengirim laporan.";
+  return "Gagal (Sheet Pengaduan hilang).";
+}
+
+function submitSurat(obj) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName('Surat');
+  if(sheet) {
+    sheet.appendRow([new Date(), obj.nama, obj.nik, obj.jenis, obj.perlu, "Diajukan"]);
+    return "Permohonan Surat Terkirim! Silakan hubungi Pak Lingkungan untuk konfirmasi.";
+  }
+  return "Gagal (Sheet Surat hilang).";
 }
 
 function cekIuranWarga(nama) {
