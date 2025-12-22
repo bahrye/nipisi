@@ -1,11 +1,12 @@
 function doGet() {
   return HtmlService.createTemplateFromFile('Index')
     .evaluate()
-    .setTitle('Nipisi Digital Market')
+    .setTitle('Nipisi Digital System')
     .addMetaTag('viewport', 'width=device-width, initial-scale=1')
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
 }
 
+// --- PENGAMBILAN DATA ---
 function getAppData() {
   return {
     produk: getData('Produk'),
@@ -13,7 +14,6 @@ function getAppData() {
     pengumuman: getData('Pengumuman'),
     darurat: getData('Darurat'),
     iuran: getData('Iuran'),
-    // Fitur Baru
     agenda: getData('Agenda'),
     harga: getData('Harga'),
     galeri: getData('Galeri')
@@ -26,62 +26,129 @@ function getData(sheetName) {
   if (!sheet) return [];
   const data = sheet.getDataRange().getValues();
   const headers = data.shift();
-  return data.map(row => {
-    let obj = {};
-    headers.forEach((header, i) => obj[header] = row[i]);
+  return data.map(function(row) {
+    var obj = {};
+    headers.forEach(function(header, i) { obj[header] = row[i]; });
     return obj;
   });
 }
 
-// --- LOGIKA ADMIN ---
-function checkAdminLogin(password) {
-  return password === "nipisi123"; // Ganti Password Disini
+// --- LOGIN & REGISTER ---
+function loginUser(username, password) {
+  const users = getData('Pengguna');
+  // Mencari user yang cocok
+  var user = null;
+  for(var i=0; i<users.length; i++) {
+    if(users[i].Username == username && users[i].Password == password) {
+      user = users[i];
+      break;
+    }
+  }
+  
+  if (!user) return { success: false, msg: "Username atau Password salah!" };
+  if (user.Status !== 'Aktif') return { success: false, msg: "Akun belum disetujui admin!" };
+  
+  return { success: true, data: user };
 }
 
+function registerUser(obj) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName('Pengguna');
+  const users = sheet.getDataRange().getValues();
+  
+  // Cek username kembar
+  for(var i=1; i<users.length; i++){
+    if(users[i][0] == obj.username) return "Username sudah dipakai!";
+  }
+  
+  const status = obj.isAdmin ? "Aktif" : "Pending";
+  sheet.appendRow([obj.username, obj.password, obj.role, obj.nama, status]);
+  
+  // Jika Toko, tambahkan ke sheet Toko otomatis
+  if(obj.role === 'Toko') {
+    const sheetToko = ss.getSheetByName('Toko');
+    if(sheetToko) sheetToko.appendRow([obj.nama, obj.nama, 'Belum Ada', '', 'Toko Baru']); 
+  }
+  
+  return "Pendaftaran Berhasil! Status: " + status;
+}
+
+// --- FITUR ADMIN / LINGKUNGAN ---
+function getPendingUsers() {
+  const users = getData('Pengguna');
+  return users.filter(function(u) { return u.Status === 'Pending'; });
+}
+
+function approveUser(username) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName('Pengguna');
+  const data = sheet.getDataRange().getValues();
+  for (var i = 1; i < data.length; i++) {
+    if (data[i][0] == username) {
+      sheet.getRange(i + 1, 5).setValue("Aktif");
+      return "Akun " + username + " berhasil diaktifkan!";
+    }
+  }
+  return "User tidak ditemukan.";
+}
+
+// --- FITUR KELURAHAN ---
+function getPendingSurat() {
+  const surat = getData('Surat');
+  // Asumsi status ada di kolom F (index data mungkin berbeda tergantung sheet Anda)
+  // Kita filter manual saja
+  return surat.filter(function(s) { return s.Status === 'Diajukan'; });
+}
+
+function processSurat(nik, status) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName('Surat');
+  const data = sheet.getDataRange().getValues();
+  for (var i = 1; i < data.length; i++) {
+    // Mencocokkan NIK (Kolom C / index 2) dan Status (Kolom F / index 5)
+    if (data[i][2] == nik && data[i][5] == 'Diajukan') {
+      sheet.getRange(i + 1, 6).setValue(status);
+      return "Surat berhasil diproses: " + status;
+    }
+  }
+  return "Data surat tidak ditemukan.";
+}
+
+// --- FITUR TOKO ---
+function addProductByToko(obj) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName('Produk');
+  const lastId = sheet.getLastRow();
+  sheet.appendRow([lastId, obj.nama, obj.kategori, obj.harga, obj.toko, obj.wa, obj.gambar]);
+  return "Produk berhasil ditambahkan!";
+}
+
+// --- FITUR UMUM ---
 function updateAnnouncement(text) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const sheet = ss.getSheetByName('Pengumuman');
-  if(sheet) {
-    sheet.getRange("A2").setValue(text);
-    return "Pengumuman berhasil diperbarui!";
-  }
-  return "Sheet Pengumuman tidak ditemukan.";
+  sheet.getRange("A2").setValue(text);
+  return "Pengumuman diperbarui.";
 }
 
-function addProductFromAdmin(obj) {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const sheet = ss.getSheetByName('Produk');
-  if(sheet) {
-    const lastId = sheet.getLastRow();
-    sheet.appendRow([lastId, obj.nama, obj.kategori, obj.harga, obj.toko, obj.wa, obj.gambar]);
-    return "Produk berhasil diterbitkan!";
-  }
-  return "Sheet Produk tidak ditemukan.";
-}
-
-// --- LOGIKA LAYANAN ---
 function submitPengaduan(obj) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const sheet = ss.getSheetByName('Pengaduan');
-  if(sheet) {
-    sheet.appendRow([new Date(), obj.nama, obj.judul, obj.isi, "Proses"]);
-    return "Laporan diterima!";
-  }
-  return "Gagal (Sheet Pengaduan hilang).";
+  sheet.appendRow([new Date(), obj.nama, obj.judul, obj.isi, "Proses"]);
+  return "Laporan diterima.";
 }
 
 function submitSurat(obj) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const sheet = ss.getSheetByName('Surat');
-  if(sheet) {
-    sheet.appendRow([new Date(), obj.nama, obj.nik, obj.jenis, obj.perlu, "Diajukan"]);
-    return "Permohonan Surat Terkirim! Silakan hubungi Pak Lingkungan untuk konfirmasi.";
-  }
-  return "Gagal (Sheet Surat hilang).";
+  sheet.appendRow([new Date(), obj.nama, obj.nik, obj.jenis, obj.perlu, "Diajukan"]);
+  return "Permohonan dikirim.";
 }
 
 function cekIuranWarga(nama) {
   const data = getData('Iuran');
   if (!nama) return [];
-  return data.filter(d => d['Nama Warga'] && d['Nama Warga'].toString().toLowerCase().includes(nama.toLowerCase()));
+  return data.filter(function(d) { 
+    return d['Nama Warga'] && d['Nama Warga'].toString().toLowerCase().includes(nama.toLowerCase()); 
+  });
 }
