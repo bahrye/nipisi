@@ -10,6 +10,23 @@
     .card-shadow { box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05); }
     .nav-active { color: #2563eb !important; }
     .glass { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(12px); }
+    
+    /* CSS Tambahan untuk Footer */
+    .main-footer {
+      text-align: center;
+      padding: 20px 0;
+      font-size: 11px;
+      color: #94a3b8;
+      margin-top: 10px;
+    }
+    .main-footer a {
+      text-decoration: none;
+      color: inherit;
+      transition: color 0.3s;
+    }
+    .main-footer a:hover {
+      color: #2563eb;
+    }
   </style>
 </head>
 <body class="pb-24">
@@ -57,6 +74,12 @@
     </div>
   </main>
 
+  <footer class="main-footer">
+    <a href="https://wa.me/qr/FMVS3NLDIRUAA1" target="_blank" rel="noopener noreferrer">
+      <p>&copy; <span id="currentYear"></span> Created by Syamsul Bahri</p>
+    </a>
+  </footer>
+
   <nav class="fixed bottom-0 w-full glass border-t border-gray-100 px-8 py-4 flex justify-between items-center z-50">
     <button id="nav-home" onclick="loadSection('home')" class="flex flex-col items-center gap-1 text-blue-600 transition-colors duration-300">
       <i class="fa fa-home text-xl"></i><span class="text-[9px] font-bold uppercase">Beranda</span>
@@ -75,6 +98,9 @@
     let masterData = {};
 
     window.onload = () => {
+      // Set tahun otomatis di footer
+      document.getElementById('currentYear').innerText = new Date().getFullYear();
+
       google.script.run.withSuccessHandler(data => {
         masterData = data;
         document.getElementById('marquee-text').innerText = masterData.pengumuman[0]?.Isi || "Selamat Datang di Nipisi Digital!";
@@ -83,29 +109,24 @@
     };
 
     function loadSection(section) {
-      // --- LOGIKA UPDATE WARNA TAB (BARU) ---
-      // 1. Reset semua tombol navigasi menjadi abu-abu (text-gray-400)
+      // --- LOGIKA UPDATE WARNA TAB ---
       const navIds = ['nav-home', 'nav-market', 'nav-profile'];
       navIds.forEach(id => {
         const btn = document.getElementById(id);
         if (btn) {
-          btn.classList.remove('text-blue-600'); // Hapus warna aktif
-          btn.classList.add('text-gray-400');    // Tambah warna tidak aktif
+          btn.classList.remove('text-blue-600');
+          btn.classList.add('text-gray-400');
         }
       });
 
-      // 2. Set tombol yang diklik menjadi biru (text-blue-600)
-      // Kita cek apakah ada tombol dengan ID yang sesuai dengan section saat ini
       const activeBtn = document.getElementById('nav-' + section);
       if (activeBtn) {
         activeBtn.classList.remove('text-gray-400');
         activeBtn.classList.add('text-blue-600');
       }
-      // ----------------------------------------
 
       const container = document.getElementById('dynamic-content');
       
-      // Logika konten asli tetap sama di bawah ini...
       if(section === 'home' || section === 'market') {
         let html = `
           <div class="relative mb-6">
@@ -115,7 +136,6 @@
           <h3 class="font-bold text-gray-800 text-lg flex items-center gap-2"><i class="fa fa-shopping-bag text-blue-500"></i> Produk Nipisi</h3>
           <div id="product-list" class="grid grid-cols-2 gap-4">`;
         
-        // Pastikan masterData.produk ada sebelum melakukan forEach
         if (masterData.produk) {
             masterData.produk.forEach(p => {
             html += `
