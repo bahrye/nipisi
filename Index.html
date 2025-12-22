@@ -10,18 +10,12 @@
     body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f8fafc; color: #1e293b; }
     .card-shadow { box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05); }
     .glass { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
-    .loader {
-      border: 3px solid #f3f3f3; border-radius: 50%; border-top: 3px solid #3498db;
-      width: 20px; height: 20px; animation: spin 1s linear infinite; display: inline-block;
-    }
+    .loader { border: 3px solid #f3f3f3; border-radius: 50%; border-top: 3px solid #3498db; width: 20px; height: 20px; animation: spin 1s linear infinite; display: inline-block; }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    .menu-icon { width: 50px; height: 50px; border-radius: 18px; display: flex; align-items: center; justify-content: center; margin-bottom: 6px; box-shadow: 0 2px 10px rgba(0,0,0,0.03); }
     
-    /* Grid Menu Kustom */
-    .menu-icon {
-        width: 50px; height: 50px; border-radius: 18px; 
-        display: flex; align-items: center; justify-content: center; 
-        margin-bottom: 6px; box-shadow: 0 2px 10px rgba(0,0,0,0.03);
-    }
+    /* Modal Login */
+    #login-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 100; align-items: center; justify-content: center; }
   </style>
 </head>
 <body class="pb-28">
@@ -32,11 +26,10 @@
         <h1 class="text-2xl font-bold tracking-tight">Nipisi Digital</h1>
         <p class="text-[10px] opacity-80 uppercase tracking-widest font-semibold">Kec. Herlang, Bulukumba</p>
       </div>
-      <button onclick="showAdminLogin()" class="bg-white/20 p-2 rounded-full hover:bg-white/30 transition">
-        <i class="fa fa-lock-open text-sm"></i>
+      <button id="btn-auth" onclick="toggleAuth()" class="bg-white/20 p-2 rounded-full hover:bg-white/30 transition text-xs font-bold px-4">
+        LOGIN
       </button>
     </div>
-    
     <div class="bg-black/10 p-2 rounded-2xl text-[11px] flex items-center">
       <span class="bg-yellow-400 text-blue-900 px-2 py-0.5 rounded-lg font-bold mr-2 uppercase">Info</span>
       <marquee id="marquee-text" class="font-medium text-white">Sinkronisasi data...</marquee>
@@ -44,48 +37,21 @@
   </header>
 
   <main class="px-5 mt-6">
-    
-    <div class="grid grid-cols-4 gap-4 mb-8">
-      <div onclick="showSurat()" class="flex flex-col items-center cursor-pointer active:scale-95 transition">
-        <div class="menu-icon bg-blue-100 text-blue-600"><i class="fa fa-envelope text-xl"></i></div>
-        <span class="text-[10px] font-bold opacity-70">SURAT</span>
-      </div>
-      <div onclick="showHarga()" class="flex flex-col items-center cursor-pointer active:scale-95 transition">
-        <div class="menu-icon bg-green-100 text-green-600"><i class="fa fa-chart-line text-xl"></i></div>
-        <span class="text-[10px] font-bold opacity-70">HARGA</span>
-      </div>
-      <div onclick="showAgenda()" class="flex flex-col items-center cursor-pointer active:scale-95 transition">
-        <div class="menu-icon bg-purple-100 text-purple-600"><i class="fa fa-calendar-alt text-xl"></i></div>
-        <span class="text-[10px] font-bold opacity-70">AGENDA</span>
-      </div>
-      <div onclick="showIuran()" class="flex flex-col items-center cursor-pointer active:scale-95 transition">
-        <div class="menu-icon bg-indigo-100 text-indigo-600"><i class="fa fa-wallet text-xl"></i></div>
-        <span class="text-[10px] font-bold opacity-70">IURAN</span>
-      </div>
-
-      <div onclick="showGaleri()" class="flex flex-col items-center cursor-pointer active:scale-95 transition">
-        <div class="menu-icon bg-pink-100 text-pink-600"><i class="fa fa-images text-xl"></i></div>
-        <span class="text-[10px] font-bold opacity-70">GALERI</span>
-      </div>
-      <div onclick="showLapor()" class="flex flex-col items-center cursor-pointer active:scale-95 transition">
-        <div class="menu-icon bg-orange-100 text-orange-600"><i class="fa fa-bullhorn text-xl"></i></div>
-        <span class="text-[10px] font-bold opacity-70">LAPOR</span>
-      </div>
-      <div onclick="showEmergency()" class="flex flex-col items-center cursor-pointer active:scale-95 transition">
-        <div class="menu-icon bg-red-100 text-red-600"><i class="fa fa-phone-alt text-xl"></i></div>
-        <span class="text-[10px] font-bold opacity-70">DARURAT</span>
-      </div>
-      <div onclick="loadSection('map')" class="flex flex-col items-center cursor-pointer active:scale-95 transition">
-        <div class="menu-icon bg-teal-100 text-teal-600"><i class="fa fa-map-marked-alt text-xl"></i></div>
-        <span class="text-[10px] font-bold opacity-70">PETA</span>
-      </div>
+    <div id="public-menu" class="grid grid-cols-4 gap-4 mb-8">
+      <div onclick="showSurat()" class="flex flex-col items-center cursor-pointer active:scale-95 transition"><div class="menu-icon bg-blue-100 text-blue-600"><i class="fa fa-envelope text-xl"></i></div><span class="text-[10px] font-bold opacity-70">SURAT</span></div>
+      <div onclick="showHarga()" class="flex flex-col items-center cursor-pointer active:scale-95 transition"><div class="menu-icon bg-green-100 text-green-600"><i class="fa fa-chart-line text-xl"></i></div><span class="text-[10px] font-bold opacity-70">HARGA</span></div>
+      <div onclick="showAgenda()" class="flex flex-col items-center cursor-pointer active:scale-95 transition"><div class="menu-icon bg-purple-100 text-purple-600"><i class="fa fa-calendar-alt text-xl"></i></div><span class="text-[10px] font-bold opacity-70">AGENDA</span></div>
+      <div onclick="showIuran()" class="flex flex-col items-center cursor-pointer active:scale-95 transition"><div class="menu-icon bg-indigo-100 text-indigo-600"><i class="fa fa-wallet text-xl"></i></div><span class="text-[10px] font-bold opacity-70">IURAN</span></div>
+      <div onclick="showGaleri()" class="flex flex-col items-center cursor-pointer active:scale-95 transition"><div class="menu-icon bg-pink-100 text-pink-600"><i class="fa fa-images text-xl"></i></div><span class="text-[10px] font-bold opacity-70">GALERI</span></div>
+      <div onclick="showLapor()" class="flex flex-col items-center cursor-pointer active:scale-95 transition"><div class="menu-icon bg-orange-100 text-orange-600"><i class="fa fa-bullhorn text-xl"></i></div><span class="text-[10px] font-bold opacity-70">LAPOR</span></div>
+      <div onclick="showEmergency()" class="flex flex-col items-center cursor-pointer active:scale-95 transition"><div class="menu-icon bg-red-100 text-red-600"><i class="fa fa-phone-alt text-xl"></i></div><span class="text-[10px] font-bold opacity-70">DARURAT</span></div>
+      <div onclick="loadSection('map')" class="flex flex-col items-center cursor-pointer active:scale-95 transition"><div class="menu-icon bg-teal-100 text-teal-600"><i class="fa fa-map-marked-alt text-xl"></i></div><span class="text-[10px] font-bold opacity-70">PETA</span></div>
     </div>
 
+    <div id="role-dashboard" class="mb-8 hidden"></div>
+
     <div id="dynamic-content" class="space-y-6 min-h-[300px]">
-      <div class="py-20 text-center text-gray-400">
-        <div class="loader mb-2"></div>
-        <p class="text-sm">Memuat Data...</p>
-      </div>
+      <div class="py-20 text-center text-gray-400"><div class="loader mb-2"></div><p class="text-sm">Memuat Data...</p></div>
     </div>
   </main>
 
@@ -94,22 +60,43 @@
   </footer>
 
   <nav class="fixed bottom-0 w-full glass border-t border-gray-100 px-8 py-4 flex justify-between items-center z-50">
-    <button id="nav-home" onclick="loadSection('home')" class="flex flex-col items-center gap-1 text-blue-600 transition">
-      <i class="fa fa-home text-xl"></i><span class="text-[9px] font-bold uppercase">Beranda</span>
-    </button>
-    <button id="nav-market" onclick="loadSection('market')" class="flex flex-col items-center gap-1 text-gray-400 transition">
-      <i class="fa fa-store text-xl"></i><span class="text-[9px] font-bold uppercase">Pasar</span>
-    </button>
-    <button id="nav-profile" onclick="loadSection('profile')" class="flex flex-col items-center gap-1 text-gray-400 transition">
-      <i class="fa fa-user-circle text-xl"></i><span class="text-[9px] font-bold uppercase">Profil</span>
-    </button>
+    <button id="nav-home" onclick="loadSection('home')" class="flex flex-col items-center gap-1 text-blue-600 transition"><i class="fa fa-home text-xl"></i><span class="text-[9px] font-bold uppercase">Beranda</span></button>
+    <button id="nav-market" onclick="loadSection('market')" class="flex flex-col items-center gap-1 text-gray-400 transition"><i class="fa fa-store text-xl"></i><span class="text-[9px] font-bold uppercase">Pasar</span></button>
+    <button id="nav-profile" onclick="loadSection('profile')" class="flex flex-col items-center gap-1 text-gray-400 transition"><i class="fa fa-user-circle text-xl"></i><span class="text-[9px] font-bold uppercase">Profil</span></button>
   </nav>
+
+  <div id="login-modal" class="flex">
+    <div class="bg-white p-8 rounded-[32px] w-4/5 max-w-sm card-shadow relative">
+      <button onclick="document.getElementById('login-modal').style.display='none'" class="absolute top-4 right-4 text-gray-300"><i class="fa fa-times"></i></button>
+      <h3 class="font-bold text-xl mb-6 text-center text-blue-800">Login Sistem</h3>
+      
+      <div id="login-form">
+        <input id="u-user" placeholder="Username" class="w-full p-4 mb-3 rounded-2xl bg-slate-50 border-none text-sm">
+        <input id="u-pass" type="password" placeholder="Password" class="w-full p-4 mb-4 rounded-2xl bg-slate-50 border-none text-sm">
+        <button onclick="doLogin()" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold text-sm shadow-lg mb-4">Masuk</button>
+        <p class="text-center text-xs text-gray-400">Belum punya akun? <span onclick="switchRegister()" class="text-blue-600 font-bold cursor-pointer">Daftar Toko</span></p>
+      </div>
+
+      <div id="register-form" class="hidden">
+        <input id="r-nama" placeholder="Nama Toko / Lengkap" class="w-full p-3 mb-2 rounded-xl bg-slate-50 border-none text-sm">
+        <input id="r-user" placeholder="Username" class="w-full p-3 mb-2 rounded-xl bg-slate-50 border-none text-sm">
+        <input id="r-pass" type="password" placeholder="Password" class="w-full p-3 mb-4 rounded-xl bg-slate-50 border-none text-sm">
+        <button onclick="doRegister()" class="w-full bg-green-600 text-white py-3 rounded-xl font-bold text-sm shadow-lg mb-3">Daftar Sekarang</button>
+        <p class="text-center text-xs text-gray-400">Sudah punya akun? <span onclick="switchLogin()" class="text-blue-600 font-bold cursor-pointer">Login</span></p>
+      </div>
+    </div>
+  </div>
 
   <script>
     var masterData = {};
+    var currentUser = null;
 
     window.onload = function() {
       document.getElementById('currentYear').innerText = new Date().getFullYear();
+      fetchData();
+    };
+
+    function fetchData() {
       google.script.run.withSuccessHandler(function(data) {
         masterData = data;
         var info = "Selamat Datang di Nipisi Digital!";
@@ -117,21 +104,111 @@
         document.getElementById('marquee-text').innerText = info;
         loadSection('home');
       }).getAppData();
-    };
+    }
 
+    // --- AUTH ---
+    function toggleAuth() {
+      if(currentUser) {
+        if(confirm("Yakin ingin logout?")) {
+          currentUser = null;
+          document.getElementById('btn-auth').innerText = "LOGIN";
+          document.getElementById('btn-auth').classList.replace('bg-red-500', 'bg-white/20');
+          document.getElementById('role-dashboard').classList.add('hidden');
+          document.getElementById('role-dashboard').innerHTML = '';
+          loadSection('home');
+        }
+      } else {
+        document.getElementById('login-modal').style.display = 'flex';
+      }
+    }
+
+    function switchRegister() { 
+      document.getElementById('login-form').classList.add('hidden'); 
+      document.getElementById('register-form').classList.remove('hidden'); 
+    }
+    function switchLogin() { 
+      document.getElementById('register-form').classList.add('hidden'); 
+      document.getElementById('login-form').classList.remove('hidden'); 
+    }
+
+    function doLogin() {
+      var u = document.getElementById('u-user').value;
+      var p = document.getElementById('u-pass').value;
+      if(!u || !p) { alert("Isi semua kolom!"); return; }
+      
+      google.script.run.withSuccessHandler(function(res) {
+        if(res.success) {
+          currentUser = res.data;
+          alert("Login Berhasil! Halo, " + currentUser.Nama);
+          document.getElementById('login-modal').style.display = 'none';
+          var btn = document.getElementById('btn-auth');
+          btn.innerText = "LOGOUT";
+          btn.classList.remove('bg-white/20');
+          btn.classList.add('bg-red-500');
+          renderDashboard();
+          loadSection('home');
+        } else {
+          alert(res.msg);
+        }
+      }).loginUser(u, p);
+    }
+
+    function doRegister() {
+      var obj = {
+        nama: document.getElementById('r-nama').value,
+        username: document.getElementById('r-user').value,
+        password: document.getElementById('r-pass').value,
+        role: 'Toko',
+        isAdmin: false
+      };
+      if(!obj.nama || !obj.username || !obj.password) { alert("Lengkapi Data!"); return; }
+      
+      google.script.run.withSuccessHandler(function(res) {
+        alert(res);
+        switchLogin();
+      }).registerUser(obj);
+    }
+
+    // --- DASHBOARD ---
+    function renderDashboard() {
+      var div = document.getElementById('role-dashboard');
+      if(!currentUser) return;
+      div.classList.remove('hidden');
+      
+      var html = '<div class="bg-gradient-to-r from-blue-600 to-blue-800 p-6 rounded-[32px] text-white shadow-lg relative overflow-hidden">';
+      html += '<i class="fa fa-user-circle absolute -right-5 -bottom-5 text-9xl text-white/10"></i>';
+      html += '<p class="text-[10px] uppercase opacity-70 font-bold mb-1">' + currentUser.Role + '</p>';
+      html += '<h2 class="text-xl font-bold mb-4">Halo, ' + currentUser.Nama + '</h2>';
+
+      if(currentUser.Role === 'Toko') {
+        html += '<button onclick="showAddProduct()" class="bg-white text-blue-800 px-4 py-3 rounded-xl text-xs font-bold w-full mb-2 shadow-md"><i class="fa fa-plus mr-2"></i>Tambah Produk Baru</button>';
+      } else if(currentUser.Role === 'Kelurahan') {
+        html += '<button onclick="showInboxSurat()" class="bg-white text-blue-800 px-4 py-3 rounded-xl text-xs font-bold w-full mb-2 shadow-md"><i class="fa fa-inbox mr-2"></i>Cek Permohonan Surat</button>';
+      } else if(currentUser.Role === 'Lingkungan') {
+        html += '<button onclick="showApproveUser()" class="bg-white text-blue-800 px-4 py-3 rounded-xl text-xs font-bold w-full mb-2 shadow-md"><i class="fa fa-check-circle mr-2"></i>Persetujuan Akun Toko</button>';
+      } else if(currentUser.Role === 'Admin') {
+        html += '<div class="grid grid-cols-2 gap-2">';
+        html += '<button onclick="showAddUserAdmin()" class="bg-white text-blue-800 px-3 py-3 rounded-xl text-[10px] font-bold shadow-md"><i class="fa fa-users mr-1"></i>Kelola User</button>';
+        html += '<button onclick="showAdminPanel()" class="bg-white text-blue-800 px-3 py-3 rounded-xl text-[10px] font-bold shadow-md"><i class="fa fa-cogs mr-1"></i>Pengaturan</button>';
+        html += '</div>';
+      }
+      html += '</div>';
+      div.innerHTML = html;
+    }
+
+    // --- NAVIGASI HALAMAN ---
     function loadSection(section) {
-      // Reset Nav
-      ['nav-home', 'nav-market', 'nav-profile'].forEach(id => {
-        var el = document.getElementById(id);
+      var navIds = ['nav-home', 'nav-market', 'nav-profile'];
+      for(var i=0; i<navIds.length; i++) {
+        var el = document.getElementById(navIds[i]);
         if(el) { el.classList.remove('text-blue-600'); el.classList.add('text-gray-400'); }
-      });
+      }
       var active = document.getElementById('nav-'+section);
       if(active) { active.classList.remove('text-gray-400'); active.classList.add('text-blue-600'); }
 
       var container = document.getElementById('dynamic-content');
       var html = "";
 
-      // === HOME ===
       if(section === 'home') {
         html += '<div class="relative mb-6">';
         html += '<input type="text" onkeyup="searchProduct(this.value)" placeholder="Cari kebutuhan..." class="w-full p-4 pl-12 rounded-2xl border-none shadow-sm text-sm focus:ring-2 focus:ring-blue-400 bg-white">';
@@ -140,273 +217,276 @@
         html += '<div id="product-list" class="grid grid-cols-2 gap-4">';
         
         if (masterData.produk && masterData.produk.length > 0) {
-            masterData.produk.forEach(p => {
-                html += `<div class="bg-white rounded-[24px] overflow-hidden card-shadow border border-white flex flex-col">
-                  <div class="h-32 bg-gray-100 w-full overflow-hidden">
-                     <img src="${p.GambarURL || 'https://via.placeholder.com/300'}" class="w-full h-full object-cover">
-                  </div>
-                  <div class="p-3 flex flex-col flex-grow">
-                      <p class="text-[8px] font-bold text-blue-500 uppercase">${p.Kategori}</p>
-                      <h4 class="text-sm font-bold text-gray-800 truncate mb-1">${p['Nama Barang']}</h4>
-                      <div class="flex justify-between items-center mt-auto">
-                        <span class="text-blue-600 font-extrabold text-sm">Rp${Number(p.Harga).toLocaleString()}</span>
-                        <button onclick="orderWA('${p.WhatsApp}', '${p['Nama Barang']}')" class="bg-blue-600 text-white w-8 h-8 rounded-full flex items-center justify-center shadow-md"><i class="fa fa-plus text-xs"></i></button>
-                      </div>
-                  </div>
-                </div>`;
-            });
-        } else { html += '<p class="col-span-2 text-center text-xs text-gray-400 py-10">Belum ada produk.</p>'; }
+            for(var j=0; j<masterData.produk.length; j++) {
+                var p = masterData.produk[j];
+                var img = p.GambarURL || 'https://via.placeholder.com/300';
+                var harga = Number(p.Harga).toLocaleString();
+                var nama = p['Nama Barang'];
+                var toko = p['Toko'] || 'Nipisi';
+                var wa = p.WhatsApp;
+
+                html += '<div class="bg-white rounded-[24px] overflow-hidden card-shadow border border-white flex flex-col">';
+                html += '<div class="h-32 bg-gray-100 w-full overflow-hidden"><img src="' + img + '" class="w-full h-full object-cover"></div>';
+                html += '<div class="p-3 flex flex-col flex-grow"><p class="text-[8px] font-bold text-blue-500 uppercase">' + p.Kategori + '</p>';
+                html += '<h4 class="text-sm font-bold text-gray-800 truncate mb-1">' + nama + '</h4>';
+                html += '<p class="text-[10px] text-gray-400 mb-1 truncate"><i class="fa fa-store mr-1"></i>' + toko + '</p>';
+                html += '<div class="flex justify-between items-center mt-auto"><span class="text-blue-600 font-extrabold text-sm">Rp' + harga + '</span>';
+                html += '<button onclick="orderWA(\'' + wa + '\', \'' + nama + '\')" class="bg-blue-600 text-white w-8 h-8 rounded-full flex items-center justify-center shadow-md"><i class="fa fa-plus text-xs"></i></button>';
+                html += '</div></div></div>';
+            }
+        } else {
+             html += '<p class="col-span-2 text-center text-xs text-gray-400 py-10">Belum ada produk.</p>';
+        }
         html += '</div>';
         container.innerHTML = html;
-      }
 
-      // === MARKET (TOKO) ===
-      else if(section === 'market') {
-        html += '<h3 class="font-bold text-gray-800 text-lg mb-4"><i class="fa fa-store text-blue-500 mr-2"></i>UMKM Nipisi</h3>';
-        html += '<div class="space-y-4">';
+      } else if(section === 'market') {
+        html += '<h3 class="font-bold text-gray-800 text-lg mb-4">UMKM Nipisi</h3><div class="space-y-4">';
         if (masterData.toko && masterData.toko.length > 0) {
-           masterData.toko.forEach(t => {
-             html += `<div class="bg-white p-4 rounded-[24px] card-shadow flex gap-4 items-center">
-                <div class="w-16 h-16 rounded-2xl bg-blue-50 overflow-hidden shrink-0"><img src="${t.GambarURL || 'https://via.placeholder.com/100'}" class="w-full h-full object-cover"></div>
-                <div class="flex-grow">
-                  <h4 class="font-bold text-gray-800 text-sm">${t['Nama Toko']}</h4>
-                  <p class="text-[10px] text-gray-500 font-bold uppercase">${t['Pemilik']}</p>
-                  <p class="text-[10px] text-gray-400 italic truncate w-40">${t['Deskripsi'] || 'Usaha warga'}</p>
-                </div>
-                ${t['WhatsApp'] ? `<button onclick="window.open('https://wa.me/${t['WhatsApp']}', '_blank')" class="w-10 h-10 rounded-full bg-green-100 text-green-600 flex items-center justify-center"><i class="fab fa-whatsapp"></i></button>` : ''}
-             </div>`;
-           });
+           for(var k=0; k<masterData.toko.length; k++) {
+             var t = masterData.toko[k];
+             var tImg = t.GambarURL || 'https://via.placeholder.com/100';
+             var tNama = t['Nama Toko'];
+             var tPemilik = t['Pemilik'];
+             var tWa = t['WhatsApp'];
+             
+             html += '<div class="bg-white p-4 rounded-[24px] card-shadow flex gap-4 items-center">';
+             html += '<div class="w-16 h-16 rounded-2xl bg-blue-50 overflow-hidden shrink-0"><img src="' + tImg + '" class="w-full h-full object-cover"></div>';
+             html += '<div class="flex-grow"><h4 class="font-bold text-gray-800 text-sm">' + tNama + '</h4><p class="text-[10px] text-gray-500 font-bold uppercase">' + tPemilik + '</p></div>';
+             if(tWa) {
+                html += '<button onclick="window.open(\'https://wa.me/' + tWa + '\', \'_blank\')" class="w-10 h-10 rounded-full bg-green-100 text-green-600 flex items-center justify-center"><i class="fab fa-whatsapp"></i></button>';
+             }
+             html += '</div>';
+           }
         } else { html += '<p class="text-center text-xs text-gray-400 py-10">Data toko kosong.</p>'; }
         html += '</div>';
         container.innerHTML = html;
-      }
 
-      // === PROFILE ===
-      else if(section === 'profile') {
-        container.innerHTML = `<div class="bg-white p-8 rounded-[32px] text-center card-shadow">
-            <div class="w-24 h-24 mx-auto mb-4 bg-blue-100 rounded-full overflow-hidden p-1"><img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" class="w-full h-full rounded-full bg-white"></div>
-            <h2 class="text-xl font-bold">Admin Lingkungan</h2>
-            <p class="text-blue-600 text-sm font-medium mb-6">Nipisi, Herlang</p>
-            <div class="bg-slate-50 p-4 rounded-2xl"><p class="text-[10px] text-gray-400 uppercase font-bold">Produk Terdaftar</p><p class="text-lg font-bold text-slate-800">${masterData.produk ? masterData.produk.length : 0}</p></div>
-          </div>`;
-      }
-      
-      // === PETA ===
-      else if(section === 'map') {
-        container.innerHTML = `<div class="bg-white p-4 rounded-[32px] card-shadow h-[400px] flex flex-col">
-            <h3 class="font-bold mb-4 px-2">Peta Nipisi - Herlang</h3>
-            <div class="flex-grow bg-slate-100 rounded-2xl overflow-hidden relative">
-               <iframe src="https://maps.google.com/maps?q=-5.420849968138382,120.4094769294055&hl=id&z=16&output=embed" width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy"></iframe>
-            </div>
-            <p class="text-center text-[10px] text-gray-400 mt-2">Titik Koordinat: -5.4208, 120.409</p>
-          </div>`;
+      } else if(section === 'profile') {
+        var roleDisplay = currentUser ? currentUser.Role : "Tamu";
+        var nameDisplay = currentUser ? currentUser.Nama : "Silakan Login";
+        
+        html += '<div class="bg-white p-8 rounded-[32px] text-center card-shadow">';
+        html += '<div class="w-24 h-24 mx-auto mb-4 bg-blue-100 rounded-full overflow-hidden p-1">';
+        html += '<img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" class="w-full h-full rounded-full bg-white"></div>';
+        html += '<h2 class="text-xl font-bold">' + nameDisplay + '</h2>';
+        html += '<p class="text-blue-600 text-sm font-medium mb-6">' + roleDisplay + '</p>';
+        if(!currentUser) {
+            html += '<button onclick="toggleAuth()" class="bg-blue-600 text-white px-6 py-2 rounded-full text-sm font-bold">Login Sekarang</button>';
+        }
+        html += '</div>';
+        container.innerHTML = html;
+
+      } else if(section === 'map') {
+        html += '<div class="bg-white p-4 rounded-[32px] card-shadow h-[400px] flex flex-col">';
+        html += '<h3 class="font-bold mb-4 px-2">Peta Nipisi - Herlang</h3>';
+        html += '<div class="flex-grow bg-slate-100 rounded-2xl overflow-hidden relative">';
+        html += '<iframe src="https://maps.google.com/maps?q=-5.420849968138382,120.4094769294055&hl=id&z=16&output=embed" width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy"></iframe>';
+        html += '</div><p class="text-center text-[10px] text-gray-400 mt-2">Titik Koordinat: -5.4208, 120.409</p></div>';
+        container.innerHTML = html;
       }
     }
 
-    // --- FITUR BARU 1: SURAT PENGANTAR ---
+    // --- FUNGSI MENU (Surat, Harga, dll) ---
     function showSurat() {
-      document.getElementById('dynamic-content').innerHTML = `
-        <div class="bg-white p-6 rounded-[32px] card-shadow border border-blue-50">
-          <h3 class="font-bold text-lg mb-4 text-blue-600"><i class="fa fa-envelope mr-2"></i>Request Surat</h3>
-          <p class="text-xs text-gray-400 mb-4">Ajukan surat pengantar RT/Lingkungan secara online.</p>
-          <input id="s-nama" placeholder="Nama Lengkap" class="w-full p-4 mb-3 rounded-2xl bg-slate-50 border-none text-sm">
-          <input id="s-nik" placeholder="NIK (16 Digit)" type="number" class="w-full p-4 mb-3 rounded-2xl bg-slate-50 border-none text-sm">
-          <select id="s-jenis" class="w-full p-4 mb-3 rounded-2xl bg-slate-50 border-none text-sm text-gray-600">
-            <option value="">Pilih Jenis Surat</option>
-            <option>Surat Pengantar KTP</option>
-            <option>Surat Pengantar KK</option>
-            <option>Surat Keterangan Usaha</option>
-            <option>Surat Keterangan Domisili</option>
-            <option>Surat Keterangan Tidak Mampu</option>
-            <option>Lainnya</option>
-          </select>
-          <textarea id="s-perlu" placeholder="Keperluan Spesifik..." class="w-full p-4 mb-4 rounded-2xl bg-slate-50 border-none text-sm" rows="3"></textarea>
-          <button onclick="kirimSurat()" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold text-sm shadow-lg shadow-blue-200">Kirim Permohonan</button>
-        </div>`;
+       var html = '<div class="bg-white p-6 rounded-[32px] card-shadow border border-blue-50">';
+       html += '<h3 class="font-bold text-lg mb-4 text-blue-600">Request Surat</h3>';
+       html += '<input id="s-nama" placeholder="Nama" class="w-full p-4 mb-3 rounded-2xl bg-slate-50 border-none text-sm">';
+       html += '<input id="s-nik" placeholder="NIK" class="w-full p-4 mb-3 rounded-2xl bg-slate-50 border-none text-sm">';
+       html += '<select id="s-jenis" class="w-full p-4 mb-3 rounded-2xl bg-slate-50 border-none text-sm"><option>Pengantar KTP</option><option>Pengantar KK</option><option>Ket. Usaha</option><option>Ket. Domisili</option></select>';
+       html += '<textarea id="s-perlu" placeholder="Keperluan..." class="w-full p-4 mb-4 rounded-2xl bg-slate-50 border-none text-sm"></textarea>';
+       html += '<button onclick="sendSurat()" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold">Kirim</button></div>';
+       document.getElementById('dynamic-content').innerHTML = html;
+    }
+    function sendSurat(){
+        var obj = {nama:document.getElementById('s-nama').value, nik:document.getElementById('s-nik').value, jenis:document.getElementById('s-jenis').value, perlu:document.getElementById('s-perlu').value};
+        google.script.run.withSuccessHandler(function(r){alert(r);loadSection('home');}).submitSurat(obj);
     }
 
-    function kirimSurat() {
-      const obj = {
-        nama: document.getElementById('s-nama').value,
-        nik: document.getElementById('s-nik').value,
-        jenis: document.getElementById('s-jenis').value,
-        perlu: document.getElementById('s-perlu').value
-      };
-      if(!obj.nama || !obj.nik || !obj.jenis) return alert("Mohon lengkapi data!");
-      
-      const btn = event.target; btn.innerText = "Mengirim..."; btn.disabled = true;
-      google.script.run.withSuccessHandler(res => { alert(res); loadSection('home'); }).submitSurat(obj);
+    function showHarga(){ 
+        var h = '<h3 class="font-bold mb-4">Harga Pasar</h3><div class="space-y-2">'; 
+        if(masterData.harga) {
+            for(var i=0; i<masterData.harga.length; i++) {
+                var x = masterData.harga[i];
+                h += '<div class="flex justify-between p-3 bg-white rounded-xl shadow-sm"><span class="font-bold text-gray-700">' + x.Komoditas + '</span><span class="text-green-600 font-bold">Rp' + Number(x.Harga).toLocaleString() + '</span></div>';
+            }
+        }
+        document.getElementById('dynamic-content').innerHTML=h+'</div>';
     }
 
-    // --- FITUR BARU 2: INFO HARGA ---
-    function showHarga() {
-      let html = `<div class="bg-white p-6 rounded-[32px] card-shadow border border-green-50">
-        <h3 class="font-bold text-lg mb-4 text-green-600"><i class="fa fa-chart-line mr-2"></i>Harga Komoditas</h3>
-        <p class="text-xs text-gray-400 mb-4">Info harga pasar area Herlang & Sekitarnya.</p>
-        <div class="space-y-3">`;
-      
-      if(masterData.harga && masterData.harga.length > 0) {
-        masterData.harga.forEach(h => {
-          let icon = h.Tren === 'Naik' ? '<i class="fa fa-arrow-up text-green-500"></i>' : (h.Tren === 'Turun' ? '<i class="fa fa-arrow-down text-red-500"></i>' : '<i class="fa fa-minus text-gray-400"></i>');
-          html += `<div class="flex justify-between items-center p-3 bg-slate-50 rounded-2xl">
-            <div><p class="font-bold text-gray-700 text-sm">${h.Komoditas}</p><p class="text-[10px] text-gray-400">${h.Satuan || '/kg'}</p></div>
-            <div class="text-right"><p class="font-bold text-green-600">Rp${Number(h.Harga).toLocaleString()}</p><p class="text-[10px]">${icon} ${h.Tren || 'Stabil'}</p></div>
-          </div>`;
-        });
-      } else { html += `<p class="text-center text-xs text-gray-400">Belum ada data harga.</p>`; }
-      html += `</div></div>`;
-      document.getElementById('dynamic-content').innerHTML = html;
+    function showAgenda(){ 
+        var h='<h3 class="font-bold mb-4">Agenda</h3><div class="space-y-2">'; 
+        if(masterData.agenda) {
+            for(var i=0; i<masterData.agenda.length; i++){
+                var x = masterData.agenda[i];
+                var tgl = new Date(x.Tanggal).toLocaleDateString();
+                h += '<div class="p-4 bg-white rounded-xl shadow-sm border-l-4 border-purple-500"><h4 class="font-bold">' + x.Kegiatan + '</h4><p class="text-xs text-gray-500">' + tgl + ' di ' + x.Lokasi + '</p></div>';
+            }
+        }
+        document.getElementById('dynamic-content').innerHTML=h+'</div>';
     }
 
-    // --- FITUR BARU 3: AGENDA ---
-    function showAgenda() {
-      let html = `<div class="bg-white p-6 rounded-[32px] card-shadow border border-purple-50">
-        <h3 class="font-bold text-lg mb-4 text-purple-600"><i class="fa fa-calendar-alt mr-2"></i>Agenda Lingkungan</h3>
-        <div class="space-y-4">`;
-      
-      if(masterData.agenda && masterData.agenda.length > 0) {
-        masterData.agenda.forEach(a => {
-           // Format Tanggal
-           let date = new Date(a.Tanggal);
-           let day = date.getDate();
-           let month = date.toLocaleString('id-ID', { month: 'short' });
-
-           html += `<div class="flex gap-4 items-start">
-             <div class="bg-purple-100 text-purple-600 rounded-2xl w-14 h-14 flex flex-col items-center justify-center shrink-0">
-               <span class="text-lg font-bold leading-none">${day}</span><span class="text-[9px] uppercase font-bold">${month}</span>
-             </div>
-             <div>
-               <h4 class="font-bold text-gray-800 text-sm">${a.Kegiatan}</h4>
-               <p class="text-xs text-gray-500 mt-1"><i class="fa fa-clock mr-1 text-purple-400"></i>${a.Waktu ? new Date(a.Waktu).toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'}) : 'Tentative'} WITA</p>
-               <p class="text-xs text-gray-500"><i class="fa fa-map-marker-alt mr-1 text-purple-400"></i>${a.Lokasi}</p>
-             </div>
-           </div>`;
-        });
-      } else { html += `<p class="text-center text-xs text-gray-400">Tidak ada agenda dalam waktu dekat.</p>`; }
-      html += `</div></div>`;
-      document.getElementById('dynamic-content').innerHTML = html;
+    function showGaleri(){ 
+        var h='<h3 class="font-bold mb-4">Galeri</h3><div class="grid grid-cols-2 gap-2">'; 
+        if(masterData.galeri) {
+            for(var i=0; i<masterData.galeri.length; i++){
+                var x = masterData.galeri[i];
+                h += '<img src="' + x.FotoURL + '" class="w-full h-24 object-cover rounded-xl">';
+            }
+        }
+        document.getElementById('dynamic-content').innerHTML=h+'</div>';
     }
 
-    // --- FITUR BARU 4: GALERI ---
-    function showGaleri() {
-      let html = `<div class="bg-white p-4 rounded-[32px] card-shadow">
-        <h3 class="font-bold text-lg mb-4 text-pink-600 px-2"><i class="fa fa-images mr-2"></i>Galeri Kegiatan</h3>
-        <div class="grid grid-cols-2 gap-3">`;
-      
-      if(masterData.galeri && masterData.galeri.length > 0) {
-        masterData.galeri.forEach(g => {
-          html += `<div class="relative rounded-2xl overflow-hidden h-32 bg-gray-100 group">
-            <img src="${g.FotoURL}" class="w-full h-full object-cover">
-            <div class="absolute bottom-0 w-full bg-gradient-to-t from-black/70 to-transparent p-2">
-              <p class="text-white text-[10px] font-bold truncate">${g.Judul}</p>
-            </div>
-          </div>`;
-        });
-      } else { html += `<p class="col-span-2 text-center text-xs text-gray-400 py-4">Belum ada foto.</p>`; }
-      html += `</div></div>`;
-      document.getElementById('dynamic-content').innerHTML = html;
+    function showIuran(){ 
+        var html = '<div class="bg-white p-6 rounded-[32px] shadow-sm"><h3 class="font-bold mb-4">Cek Iuran</h3><div class="flex gap-2"><input id="cek-i" placeholder="Nama..." class="flex-1 p-3 rounded-xl bg-slate-50"><button onclick="runCekIuran()" class="bg-indigo-600 text-white px-4 rounded-xl font-bold">Cek</button></div><div id="res-i" class="mt-4 space-y-2"></div></div>'; 
+        document.getElementById('dynamic-content').innerHTML = html;
+    }
+    function runCekIuran(){ 
+        var val = document.getElementById('cek-i').value;
+        google.script.run.withSuccessHandler(function(d){
+            var h=''; 
+            for(var i=0; i<d.length; i++){
+                var color = d[i].Status=='Lunas'?'text-green-600':'text-red-600';
+                h += '<div class="p-3 border rounded-xl flex justify-between"><span>' + d[i].Bulan + '</span><span class="' + color + ' font-bold">' + d[i].Status + '</span></div>';
+            }
+            document.getElementById('res-i').innerHTML = h || 'Nihil'; 
+        }).cekIuranWarga(val); 
     }
 
-    // --- FITUR LAMA: LAPOR, IURAN, DARURAT ---
-    function showLapor() {
-      document.getElementById('dynamic-content').innerHTML = `
-        <div class="bg-white p-6 rounded-[32px] card-shadow border border-orange-50">
-          <h3 class="font-bold text-lg mb-4 text-orange-600">Form Pengaduan</h3>
-          <input id="l-nama" placeholder="Nama Anda" class="w-full p-4 mb-3 rounded-2xl bg-slate-50 border-none text-sm">
-          <input id="l-hal" placeholder="Hal yang dilaporkan" class="w-full p-4 mb-3 rounded-2xl bg-slate-50 border-none text-sm">
-          <textarea id="l-isi" placeholder="Ceritakan detailnya..." class="w-full p-4 mb-4 rounded-2xl bg-slate-50 border-none text-sm" rows="3"></textarea>
-          <button onclick="kirimLaporan()" class="w-full bg-orange-500 text-white py-4 rounded-2xl font-bold text-sm shadow-lg shadow-orange-100">Kirim Laporan</button>
-        </div>`;
+    function showLapor(){ 
+        var html = '<div class="bg-white p-6 rounded-[32px] shadow-sm"><h3 class="font-bold mb-4">Lapor</h3><input id="lp-nm" placeholder="Nama" class="w-full p-3 bg-slate-50 rounded-xl mb-2"><textarea id="lp-isi" placeholder="Isi..." class="w-full p-3 bg-slate-50 rounded-xl mb-2"></textarea><button onclick="sendLapor()" class="w-full bg-orange-500 text-white py-3 rounded-xl font-bold">Kirim</button></div>';
+        document.getElementById('dynamic-content').innerHTML = html;
     }
-    function kirimLaporan() {
-       const o = {nama:document.getElementById('l-nama').value, judul:document.getElementById('l-hal').value, isi:document.getElementById('l-isi').value};
-       if(!o.nama || !o.isi) return alert("Lengkapi data!");
-       google.script.run.withSuccessHandler(r=>{alert(r);loadSection('home');}).submitPengaduan(o);
-    }
-    
-    function showIuran() {
-      document.getElementById('dynamic-content').innerHTML = `
-        <div class="bg-white p-6 rounded-[32px] card-shadow border border-indigo-50">
-          <h3 class="font-bold text-lg mb-4 text-indigo-700">Cek Iuran</h3>
-          <div class="flex gap-2 mb-4">
-             <input id="search-iuran" placeholder="Nama..." class="flex-1 p-4 rounded-2xl bg-slate-50 border-none text-sm">
-             <button onclick="cekIuran()" class="bg-indigo-600 text-white px-5 rounded-2xl font-bold"><i class="fa fa-search"></i></button>
-          </div>
-          <div id="res-iuran" class="space-y-2"></div>
-        </div>`;
-    }
-    function cekIuran(){
-       const n = document.getElementById('search-iuran').value;
-       const div = document.getElementById('res-iuran');
-       div.innerHTML = '<p class="text-center text-xs text-gray-400">Mencari...</p>';
-       google.script.run.withSuccessHandler(d => {
-         if(!d.length) { div.innerHTML = '<p class="text-center text-red-500 text-xs">Tidak ditemukan.</p>'; return; }
-         let h = '';
-         d.forEach(x => {
-            h += `<div class="p-3 rounded-2xl border ${x.Status==='Lunas'?'border-green-100 bg-green-50':'border-red-100 bg-red-50'} flex justify-between items-center">
-              <div><p class="text-[10px] font-bold text-gray-400 uppercase">${x.Bulan}</p><p class="font-bold text-sm text-gray-800">Rp${Number(x.Jumlah).toLocaleString()}</p></div>
-              <span class="text-[9px] font-bold px-3 py-1 rounded-full ${x.Status==='Lunas'?'bg-green-600 text-white':'bg-red-600 text-white'}">${x.Status}</span>
-            </div>`;
-         });
-         div.innerHTML = h;
-       }).cekIuranWarga(n);
+    function sendLapor(){ 
+        google.script.run.withSuccessHandler(function(r){alert(r);loadSection('home');}).submitPengaduan({nama:document.getElementById('lp-nm').value, judul:'Laporan', isi:document.getElementById('lp-isi').value}); 
     }
 
-    function showEmergency() {
-      let h = `<h3 class="font-bold text-red-600 mb-4 px-2 italic">Telepon Penting</h3>`;
-      if(masterData.darurat) masterData.darurat.forEach(d => {
-         h += `<a href="tel:${d.Nomor}" class="flex items-center justify-between bg-white p-4 rounded-[24px] mb-3 card-shadow border-l-4 border-red-500"><span class="font-bold text-gray-700 text-sm">${d.Nama}</span><div class="bg-red-100 text-red-600 p-2 rounded-full"><i class="fa fa-phone-alt"></i></div></a>`;
-      });
-      document.getElementById('dynamic-content').innerHTML = h;
+    function showEmergency(){ 
+        var h='<h3 class="font-bold text-red-600 mb-4">Telepon Darurat</h3>'; 
+        if(masterData.darurat) {
+            for(var i=0; i<masterData.darurat.length; i++){
+                var d = masterData.darurat[i];
+                h += '<a href="tel:' + d.Nomor + '" class="block bg-white p-4 mb-2 rounded-xl shadow-sm border-l-4 border-red-500 font-bold text-gray-700">' + d.Nama + '</a>';
+            }
+        }
+        document.getElementById('dynamic-content').innerHTML=h; 
     }
 
-    // --- PENCARIAN & ADMIN ---
-    function searchProduct(v) {
-       if(!masterData.produk) return;
-       const lst = document.getElementById('product-list');
-       if(!lst) return;
-       const f = masterData.produk.filter(p=>p['Nama Barang'].toLowerCase().includes(v.toLowerCase()));
-       let h = '';
-       if(f.length) f.forEach(p => {
-         h += `<div class="bg-white rounded-[24px] overflow-hidden card-shadow border border-white flex flex-col">
-           <div class="h-32 bg-gray-100 w-full overflow-hidden"><img src="${p.GambarURL || 'https://via.placeholder.com/300'}" class="w-full h-full object-cover"></div>
-           <div class="p-3 flex flex-col flex-grow"><p class="text-[8px] font-bold text-blue-500 uppercase">${p.Kategori}</p><h4 class="text-sm font-bold text-gray-800 truncate mb-1">${p['Nama Barang']}</h4>
-           <div class="flex justify-between items-center mt-auto"><span class="text-blue-600 font-extrabold text-sm">Rp${Number(p.Harga).toLocaleString()}</span><button onclick="orderWA('${p.WhatsApp}', '${p['Nama Barang']}')" class="bg-blue-600 text-white w-8 h-8 rounded-full flex items-center justify-center shadow-md"><i class="fa fa-plus text-xs"></i></button></div></div></div>`;
-       }); else h = '<p class="col-span-2 text-center text-xs text-gray-400 py-4">Tidak ditemukan.</p>';
-       lst.innerHTML = h;
+    function searchProduct(v){ 
+        if(!masterData.produk)return; 
+        var list = document.getElementById('product-list');
+        if(!list) return;
+        
+        var term = v.toLowerCase();
+        var h=''; 
+        for(var i=0; i<masterData.produk.length; i++){
+            var p = masterData.produk[i];
+            if(p['Nama Barang'].toLowerCase().includes(term)){
+                var img = p.GambarURL||'https://via.placeholder.com/100';
+                h += '<div class="bg-white p-3 rounded-xl shadow-sm mb-2 flex gap-3"><img src="' + img + '" class="w-16 h-16 rounded-lg object-cover"><div><h4 class="font-bold text-sm">' + p['Nama Barang'] + '</h4><p class="text-xs text-gray-500">' + p.Toko + '</p><p class="text-blue-600 font-bold text-sm">Rp' + Number(p.Harga).toLocaleString() + '</p></div></div>';
+            }
+        }
+        list.innerHTML = h || 'Kosong'; 
     }
-    
-    function orderWA(n,i) { window.open(`https://wa.me/${n.toString().replace(/[^0-9]/g,'').replace(/^0/,'62')}?text=Halo, pesan ${i}`, '_blank'); }
+    function orderWA(n,i) { window.open('https://wa.me/' + n.toString().replace(/[^0-9]/g,'').replace(/^0/,'62') + '?text=Halo, pesan ' + i, '_blank'); }
 
-    function showAdminLogin(){
-       const p = prompt("Password Admin:");
-       if(p) google.script.run.withSuccessHandler(v=>{if(v) renderAdmin(); else alert("Salah!");}).checkAdminLogin(p);
+    // --- FITUR ADMIN / ROLE ---
+    function showAddProduct() {
+        var html = '<div class="bg-white p-6 rounded-[32px] card-shadow">';
+        html += '<h3 class="font-bold text-lg mb-4 text-blue-600">Tambah Dagangan</h3>';
+        html += '<p class="text-xs text-gray-400 mb-4">Toko: ' + currentUser.Nama + '</p>';
+        html += '<input id="tp-nama" placeholder="Nama Barang" class="w-full p-4 mb-2 rounded-2xl bg-slate-50 border-none text-sm">';
+        html += '<input id="tp-harga" type="number" placeholder="Harga (Rp)" class="w-full p-4 mb-2 rounded-2xl bg-slate-50 border-none text-sm">';
+        html += '<input id="tp-wa" placeholder="No WhatsApp (628...)" class="w-full p-4 mb-2 rounded-2xl bg-slate-50 border-none text-sm">';
+        html += '<input id="tp-img" placeholder="URL Foto Produk" class="w-full p-4 mb-4 rounded-2xl bg-slate-50 border-none text-sm">';
+        html += '<select id="tp-kat" class="w-full p-4 mb-4 rounded-2xl bg-slate-50 border-none text-sm"><option>Makanan</option><option>Minuman</option><option>Jasa</option><option>Lainnya</option></select>';
+        html += '<button onclick="submitProductToko()" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold">Terbitkan</button></div>';
+        document.getElementById('dynamic-content').innerHTML = html;
     }
-    
-    function renderAdmin(){
-      const txt = (masterData.pengumuman && masterData.pengumuman.length) ? masterData.pengumuman[0].Isi : '';
-      document.getElementById('dynamic-content').innerHTML = `
-        <div class="bg-slate-900 text-white p-6 rounded-[32px]">
-          <h2 class="font-bold mb-4">Panel Admin</h2>
-          <label class="text-[10px] text-gray-400 uppercase font-bold">Pengumuman</label>
-          <textarea id="adm-info" class="w-full p-3 rounded-xl bg-slate-800 text-sm mb-2" rows="2">${txt}</textarea>
-          <button onclick="saveInfo()" class="w-full bg-blue-600 py-3 rounded-xl text-xs font-bold mb-6">Simpan</button>
-          
-          <label class="text-[10px] text-gray-400 uppercase font-bold">Tambah Produk</label>
-          <input id="p-nm" placeholder="Nama" class="w-full p-3 rounded-xl bg-slate-800 text-sm mb-2">
-          <input id="p-hg" placeholder="Harga" type="number" class="w-full p-3 rounded-xl bg-slate-800 text-sm mb-2">
-          <input id="p-tk" placeholder="Toko" class="w-full p-3 rounded-xl bg-slate-800 text-sm mb-2">
-          <input id="p-wa" placeholder="WA" class="w-full p-3 rounded-xl bg-slate-800 text-sm mb-2">
-          <input id="p-img" placeholder="URL Foto" class="w-full p-3 rounded-xl bg-slate-800 text-sm mb-2">
-          <button onclick="saveProd()" class="w-full bg-green-600 py-3 rounded-xl text-xs font-bold">Terbitkan</button>
-        </div>`;
+    function submitProductToko() {
+        var obj = {
+            nama: document.getElementById('tp-nama').value,
+            harga: document.getElementById('tp-harga').value,
+            wa: document.getElementById('tp-wa').value,
+            gambar: document.getElementById('tp-img').value,
+            kategori: document.getElementById('tp-kat').value,
+            toko: currentUser.Nama
+        };
+        google.script.run.withSuccessHandler(function(res){ alert(res); fetchData(); }).addProductByToko(obj);
     }
-    function saveInfo(){google.script.run.withSuccessHandler(r=>{alert(r);location.reload()}).updateAnnouncement(document.getElementById('adm-info').value);}
-    function saveProd(){
-       const o = {nama:document.getElementById('p-nm').value, harga:document.getElementById('p-hg').value, toko:document.getElementById('p-tk').value, wa:document.getElementById('p-wa').value, gambar:document.getElementById('p-img').value, kategori:'Umum'};
-       if(!o.nama) return alert("Isi nama produk!");
-       google.script.run.withSuccessHandler(r=>{alert(r);location.reload()}).addProductFromAdmin(o);
+
+    function showInboxSurat() {
+        document.getElementById('dynamic-content').innerHTML = '<p class="text-center text-xs">Memuat Data Surat...</p>';
+        google.script.run.withSuccessHandler(function(data){
+            var html = '<h3 class="font-bold text-lg mb-4 text-blue-600">Permohonan Surat Masuk</h3>';
+            if(data.length === 0) html += '<p class="text-center text-xs text-gray-400">Tidak ada surat baru.</p>';
+            for(var i=0; i<data.length; i++){
+                var s = data[i];
+                html += '<div class="bg-white p-4 rounded-2xl border border-blue-100 mb-3 shadow-sm">';
+                html += '<h4 class="font-bold text-gray-800">' + s.Nama + '</h4>';
+                html += '<p class="text-xs text-gray-500 mb-1">NIK: ' + s.NIK + ' | ' + s['Jenis Surat'] + '</p>';
+                html += '<p class="text-xs italic text-gray-400 mb-3">"' + s.Keperluan + '"</p>';
+                html += '<div class="flex gap-2"><button onclick="updateSurat(\'' + s.NIK + '\', \'Selesai\')" class="bg-green-600 text-white px-4 py-2 rounded-xl text-xs font-bold flex-1">Setujui</button>';
+                html += '<button onclick="updateSurat(\'' + s.NIK + '\', \'Ditolak\')" class="bg-red-500 text-white px-4 py-2 rounded-xl text-xs font-bold">Tolak</button></div></div>';
+            }
+            document.getElementById('dynamic-content').innerHTML = html;
+        }).getPendingSurat();
     }
+    function updateSurat(nik, st) {
+        if(confirm("Ubah status surat menjadi " + st + "?")) {
+            google.script.run.withSuccessHandler(function(res){ alert(res); showInboxSurat(); }).processSurat(nik, st);
+        }
+    }
+
+    function showApproveUser() {
+        document.getElementById('dynamic-content').innerHTML = '<p class="text-center text-xs">Memuat Data...</p>';
+        google.script.run.withSuccessHandler(function(data){
+            var html = '<h3 class="font-bold text-lg mb-4 text-blue-600">Persetujuan Toko Baru</h3>';
+            if(data.length === 0) html += '<p class="text-center text-xs text-gray-400">Tidak ada pendaftaran baru.</p>';
+            for(var i=0; i<data.length; i++){
+                var u = data[i];
+                html += '<div class="bg-white p-4 rounded-2xl border border-yellow-100 mb-3 shadow-sm flex justify-between items-center">';
+                html += '<div><h4 class="font-bold text-gray-800">' + u.Nama + '</h4><p class="text-xs text-gray-500">User: ' + u.Username + '</p></div>';
+                html += '<button onclick="accUser(\'' + u.Username + '\')" class="bg-blue-600 text-white px-4 py-2 rounded-xl text-xs font-bold">Terima</button></div>';
+            }
+            document.getElementById('dynamic-content').innerHTML = html;
+        }).getPendingUsers();
+    }
+    function accUser(user) {
+        if(confirm("Aktifkan akun ini?")) {
+            google.script.run.withSuccessHandler(function(res){ alert(res); showApproveUser(); }).approveUser(user);
+        }
+    }
+
+    function showAddUserAdmin() {
+        var html = '<div class="bg-white p-6 rounded-[32px] card-shadow border border-slate-100">';
+        html += '<h3 class="font-bold text-lg mb-4 text-blue-800">Tambah Akun Baru</h3>';
+        html += '<input id="au-nama" placeholder="Nama" class="w-full p-3 mb-2 rounded-xl bg-slate-50 border-none text-sm">';
+        html += '<input id="au-user" placeholder="Username" class="w-full p-3 mb-2 rounded-xl bg-slate-50 border-none text-sm">';
+        html += '<input id="au-pass" placeholder="Password" class="w-full p-3 mb-2 rounded-xl bg-slate-50 border-none text-sm">';
+        html += '<select id="au-role" class="w-full p-3 mb-4 rounded-xl bg-slate-50 border-none text-sm"><option value="Toko">Toko</option><option value="Kelurahan">Kelurahan</option><option value="Lingkungan">Lingkungan</option><option value="Admin">Admin</option></select>';
+        html += '<button onclick="submitUserAdmin()" class="w-full bg-slate-800 text-white py-3 rounded-xl font-bold text-sm">Buat Akun</button></div>';
+        document.getElementById('dynamic-content').innerHTML = html;
+    }
+    function submitUserAdmin() {
+        var obj = {
+            nama: document.getElementById('au-nama').value,
+            username: document.getElementById('au-user').value,
+            password: document.getElementById('au-pass').value,
+            role: document.getElementById('au-role').value,
+            isAdmin: true
+        };
+        google.script.run.withSuccessHandler(function(res){ alert(res); document.getElementById('au-user').value=''; }).registerUser(obj);
+    }
+
+    function showAdminPanel() {
+        var info = (masterData.pengumuman && masterData.pengumuman.length > 0) ? masterData.pengumuman[0].Isi : '';
+        var html = '<div class="bg-white p-6 rounded-[32px] card-shadow"><label class="text-[10px] font-bold uppercase">Update Pengumuman</label>';
+        html += '<textarea id="adm-info" class="w-full p-3 bg-slate-50 rounded-xl mt-2" rows="3">' + info + '</textarea>';
+        html += '<button onclick="saveInfo()" class="bg-blue-600 text-white w-full py-3 rounded-xl mt-2 font-bold text-xs">Simpan</button></div>';
+        document.getElementById('dynamic-content').innerHTML = html;
+    }
+    function saveInfo(){ google.script.run.withSuccessHandler(function(r){alert(r);fetchData();}).updateAnnouncement(document.getElementById('adm-info').value); }
   </script>
 </body>
 </html>
